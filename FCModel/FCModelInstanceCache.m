@@ -7,10 +7,15 @@
 //
 
 #import "FCModelInstanceCache.h"
+#import "FCModelConcurrentMutableDictionary.h"
+
+#if TARGET_OS_IPHONE
+#import <UIKit/UIKit.h>
+#endif
 extern NSString * const FCModelWillSendChangeNotification;
 
 @interface FCModelInstanceCache ()
-@property (nonatomic) NSMutableDictionary *cachesByClass;
+@property (nonatomic) FCModelConcurrentMutableDictionary *cachesByClass;
 @end
 
 #if TARGET_OS_IPHONE
@@ -22,7 +27,7 @@ extern NSString * const FCModelWillSendChangeNotification;
 - (instancetype)init
 {
     if ( (self = [super init]) ) {
-        self.cachesByClass = [NSMutableDictionary dictionary];
+        self.cachesByClass = [FCModelConcurrentMutableDictionary dictionary];
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(invalidate:) name:FCModelWillSendChangeNotification object:nil];
 #if TARGET_OS_IPHONE
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(removeAllInstances) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
@@ -36,14 +41,14 @@ extern NSString * const FCModelWillSendChangeNotification;
 - (FCModel *)instanceOfClass:(Class)class withPrimaryKeyValue:(id)primaryKeyValue
 {
     if (! primaryKeyValue) return nil;
-    NSCache *classCache = self.cachesByClass[class];
+    FCModelConcurrentMutableDictionary *classCache = self.cachesByClass[class];
     return classCache ? [classCache objectForKey:primaryKeyValue] : nil;
 }
 
 - (void)removeInstanceOfClass:(Class)class withPrimaryKeyValue:(id)primaryKeyValue
 {
     if (! primaryKeyValue) return;
-    NSCache *classCache = self.cachesByClass[class];
+    FCModelConcurrentMutableDictionary *classCache = self.cachesByClass[class];
     if (classCache) [classCache removeObjectForKey:primaryKeyValue];
 }
 
@@ -52,9 +57,9 @@ extern NSString * const FCModelWillSendChangeNotification;
     id pkValue = instance.primaryKey;
     if (! pkValue) return;
     
-    NSCache *classCache = self.cachesByClass[instance.class];
+    FCModelConcurrentMutableDictionary *classCache = self.cachesByClass[instance.class];
     if (! classCache) {
-        classCache = [[NSCache alloc] init];
+        classCache = [FCModelConcurrentMutableDictionary dictionary];
         self.cachesByClass[(id)instance.class] = classCache;
     }
     [classCache setObject:[instance copy] forKey:pkValue];
