@@ -13,6 +13,9 @@ extern NSString * const FCModelWillSendChangeNotification;
 @property (nonatomic) NSMutableDictionary *cachesByClass;
 @end
 
+#if TARGET_OS_IPHONE
+#import <UIKit/UIKit.h>
+#endif
 
 @implementation FCModelInstanceCache
 
