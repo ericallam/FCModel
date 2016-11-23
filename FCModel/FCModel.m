@@ -934,11 +934,19 @@ static inline BOOL checkForOpenDatabaseFatal(BOOL fatal)
 {
     if (! changedFields) changedFields = [NSSet setWithArray:self.class.databaseFieldNames];
 
-    if (g_databaseQueue.isQueuingNotifications) {
+    if (g_databaseQueue.isQueuingNotifications && g_databaseQueue.enqueuedChangedFieldsByClass) {
         id class = (id) self;
+
         NSMutableSet *changedFieldsForClass = g_databaseQueue.enqueuedChangedFieldsByClass[class];
-        if (changedFieldsForClass) [changedFieldsForClass unionSet:changedFields];
-        else g_databaseQueue.enqueuedChangedFieldsByClass[class] = [changedFields mutableCopy];
+
+        if (changedFieldsForClass) {
+            [changedFieldsForClass unionSet:changedFields];
+        }else{
+            if (class && changedFields) {
+              g_databaseQueue.enqueuedChangedFieldsByClass[class] = [changedFields mutableCopy];
+            }
+        }
+
     } else {
         // notify immediately
         onMainThreadAsync(^{
