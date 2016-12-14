@@ -958,9 +958,9 @@ static inline BOOL checkForOpenDatabaseFatal(BOOL fatal)
 
 + (void)dataChangedExternally
 {
-    [g_fieldInfo enumerateKeysAndObjectsUsingBlock:^(Class modelClass, id obj, BOOL *stop) {
-        [modelClass postChangeNotificationWithChangedFields:nil];
-    }];
+//    [g_fieldInfo enumerateKeysAndObjectsUsingBlock:^(Class modelClass, id obj, BOOL *stop) {
+//        [modelClass postChangeNotificationWithChangedFields:nil];
+//    }];
 }
 
 @end
